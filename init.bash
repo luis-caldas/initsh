@@ -123,7 +123,7 @@ main() {
     # Add the start script to it
     cat <<-EOF > "$start_file_path"
 		#!/usr/bin/env bash
-		alias vim=vim -u "${output_folder}/${PROJECT_VIM_NAME}/vimrc.vim"
+		alias vim='vim -u "${output_folder}/${PROJECT_VIM_NAME}/vimrc.vim"'
 		source ${output_folder}/${PROJECT_SHELL_NAME}/shell/shell.bash
 	EOF
     # Fix permissions
@@ -138,7 +138,7 @@ main() {
     fi
 
     # Start it
-    source "$start_file_path"
+    bash --init-file <(echo "source $start_file_path")
 
 }
 
