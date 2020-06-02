@@ -123,22 +123,22 @@ main() {
     # Add the start script to it
     cat <<-EOF > "$start_file_path"
 		#!/usr/bin/env bash
-		export VIMINIT=${output_folder}/${PROJECT_VIM_NAME}/vimrc.vim
-		bash ${output_folder}/${PROJECT_SHELL_NAME}/shell/shell.bash
+		alias vim=vim -u "${output_folder}/${PROJECT_VIM_NAME}/vimrc.vim"
+		source ${output_folder}/${PROJECT_SHELL_NAME}/shell/shell.bash
 	EOF
     # Fix permissions
     chmod 755 "$start_file_path"
 
     # Add alias to bashrc if persistent installation
     if [ "$add_alias_bashrc" -eq 1 ]; then
-        alias_line="alias ${PROGRAM_ALIAS}=${start_file_path}"
+        alias_line="alias ${PROGRAM_ALIAS}=source ${start_file_path}"
         if ! grep -Fxq "$alias_line" "$BASHRC_FILE" &> /dev/null; then
             echo "$alias_line" >> "$BASHRC_FILE"
         fi
     fi
 
     # Start it
-    exec "$start_file_path"
+    source "$start_file_path"
 
 }
 
