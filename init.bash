@@ -138,7 +138,7 @@ main() {
     fi
 
     # Start it
-    bash --init-file <(echo "source $start_file_path")
+    source "$start_file_path"
 
 }
 
