@@ -16,8 +16,9 @@ PROJECT_SHELL_GIT_NAME="myshell"
 PROJECT_VIM_NAME="vimino"
 PROJECT_VIM_GIT_NAME="myvim"
 
+
 # Bashrc file path
-BASHRC_FILE="${HOME}""/.bashrci"
+BASHRC_FILE="${HOME}""/.bashrc"
 
 # Alias in which to call the new shell
 PROGRAM_ALIAS="$FOLDER_NAME"
@@ -119,26 +120,39 @@ main() {
 
     # Create the start file that will start the shell and alias the vim config
     start_file_path="${output_folder}/start.bash"
-   
+    tmux_start_file_path="${output_folder}/tmux.bash"
+
+    # Add the tmux starter script
+    tmux_session_name="sherino"
+    cat <<-EOF > "$tmux_start_file_path"
+		#!/usr/bin/env bash
+		bash "${output_folder}/${PROJECT_SHELL_NAME}/tmux/start.bash" new-session -d -s "$tmux_session_name"
+		tmux send-keys -t "$tmux_session_name" "source \"$start_file_path\"" Enter
+		tmux attach -t "$tmux_session_name"
+	EOF
+    # Fix permissions
+    chmod 755 "$tmux_start_file_path"
+
     # Add the start script to it
     cat <<-EOF > "$start_file_path"
 		#!/usr/bin/env bash
 		alias vim='vim -u "${output_folder}/${PROJECT_VIM_NAME}/vimrc.vim"'
 		source ${output_folder}/${PROJECT_SHELL_NAME}/shell/shell.bash
+		alias neotmux='bash "${tmux_start_file_path}"'
 	EOF
     # Fix permissions
     chmod 755 "$start_file_path"
 
     # Add alias to bashrc if persistent installation
     if [ "$add_alias_bashrc" -eq 1 ]; then
-        alias_line="alias ${PROGRAM_ALIAS}=source ${start_file_path}"
+        alias_line="alias ${PROGRAM_ALIAS}='bash --init-file \"${start_file_path}\"'"
         if ! grep -Fxq "$alias_line" "$BASHRC_FILE" &> /dev/null; then
             echo "$alias_line" >> "$BASHRC_FILE"
         fi
     fi
 
     # Start it
-    source "$start_file_path"
+    bash --init-file "$start_file_path"
 
 }
 
