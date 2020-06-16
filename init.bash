@@ -13,8 +13,10 @@ PERSISTENT_FOLDER="${HOME}/.config"
 TOP_GIT_URL="https://github.com/luis-caldas"
 PROJECT_SHELL_NAME="shellino"
 PROJECT_SHELL_GIT_NAME="myshell"
+PROJECT_SHELL_GIT_BRANCH="master"
 PROJECT_VIM_NAME="vimino"
 PROJECT_VIM_GIT_NAME="myvim"
+PROJECT_VIM_GIT_BRANCH="ebf5d48ede7d2da5db93811029b783b955181237"
 
 
 # Bashrc file path
@@ -56,10 +58,23 @@ check_binaries() {
 # Runs git quietly and show simple error messages
 run_q_git() {
     if git clone "$1" "$2" &> /dev/null; then
+        # Check if branch is given
+        branch="master"
+        [ -n "$3" ] && branch="$3"
         # Get the module name
         module_name=$(basename "${2}")
         # Verbose
         echo "Cloned ${module_name} successfully"
+        # Checkout to branch
+        (
+            cd "$2" && \
+            if git checkout "$branch" &> /dev/null; then
+                echo "Changed ${module_name} to branch ${3}"
+            else
+                echo "Unable to change ${module_name} to ${3}"
+                exit 1
+            fi
+        )
         # Fetch all the submodules as well
         ( 
             # Go to the project folder and clone submodules
@@ -67,7 +82,7 @@ run_q_git() {
             if git submodule update --init --recursive &> /dev/null; then
                 echo "Cloned ${module_name} submodules successfully"
             else
-                echo "Unable to fetch ${1} submodule"; 
+                echo "Unable to fetch ${module_name} submodule";
                 exit 1;
             fi
         )
@@ -115,8 +130,8 @@ main() {
     mkdir -p "${output_folder}"
 
     # Clone all the needed repositories
-    run_q_git "${TOP_GIT_URL}/${PROJECT_SHELL_GIT_NAME}" "${output_folder}/${PROJECT_SHELL_NAME}" 
-    run_q_git "${TOP_GIT_URL}/${PROJECT_VIM_GIT_NAME}" "${output_folder}/${PROJECT_VIM_NAME}" 
+    run_q_git "${TOP_GIT_URL}/${PROJECT_SHELL_GIT_NAME}" "${output_folder}/${PROJECT_SHELL_NAME}" "${PROJECT_SHELL_GIT_BRANCH}"
+    run_q_git "${TOP_GIT_URL}/${PROJECT_VIM_GIT_NAME}" "${output_folder}/${PROJECT_VIM_NAME}" "${PROJECT_VIM_GIT_BRANCH}"
 
     # Create the start file that will start the shell and alias the vim config
     start_file_path="${output_folder}/start.bash"
